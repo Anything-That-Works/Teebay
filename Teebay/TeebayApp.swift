@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct TeebayApp: App {
+    @StateObject private var viewModel: ViewModel = ViewModel()
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack {
+                LoginView()
+            }
+            .environmentObject(viewModel)
         }
     }
 }
