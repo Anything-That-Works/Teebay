@@ -38,9 +38,9 @@ class APIServices {
 
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        let data = try await Self.makeAPIRequest(using: request)
+        let response = try await Self.makeAPIRequest(using: request)
 
-        guard let user = User.decode(from: data) else {
+        guard let user = User.decode(from: response.data) else {
             throw AppError.decodingFailed
         }
 
@@ -59,9 +59,9 @@ class APIServices {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
 
-        let data = try await Self.makeAPIRequest(using: request)
+        let response = try await Self.makeAPIRequest(using: request)
 
-        guard let authResponse = AuthResponse.decode(from: data) else {
+        guard let authResponse = AuthResponse.decode(from: response.data) else {
             throw AppError.decodingFailed
         }
         return authResponse.user
@@ -93,9 +93,9 @@ class APIServices {
             product: product
         )
 
-        let data = try await Self.makeAPIRequest(using: request)
+        let response = try await Self.makeAPIRequest(using: request)
 
-        guard let decodedProduct = Product.decode(from: data) else {
+        guard let decodedProduct = Product.decode(from: response.data) else {
             throw AppError.decodingFailed
         }
 
@@ -118,13 +118,29 @@ class APIServices {
         request.httpMethod = "GET"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
-        let data = try await Self.makeAPIRequest(using: request)
+        let response = try await Self.makeAPIRequest(using: request)
 
-        guard let products = Product.decodeArray(from: data) else {
+        guard let products = Product.decodeArray(from: response.data) else {
             throw AppError.decodingFailed
         }
 
         return products
+    }
+
+    static func deleteProduct(id: Int) async throws {
+        print(id)
+        guard let url = URL(string: Constants.baseURL + Constants.deleteProductEndpoint + "\(id)/") else {
+            print("Invalid URL: \(Constants.baseURL + Constants.deleteProductEndpoint)\(id)/")
+            throw AppError.invalidURL
+        }
+        print(url)
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let response = try await Self.makeAPIRequest(using: request)
+
+        print(response.httpResponse)
     }
 
     private static func createMultipartBody(boundary: String, product: Product)
@@ -202,7 +218,7 @@ class APIServices {
     }
 
     private static func makeAPIRequest(using request: URLRequest) async throws
-    -> Data
+    -> (data: Data, httpResponse: HTTPURLResponse)
     {
         let (data, response) = try await URLSession.shared.data(for: request)
 
@@ -211,7 +227,7 @@ class APIServices {
         }
 
         if (200...299).contains(httpResponse.statusCode) {
-            return data
+            return (data, httpResponse)
         } else {
             throw AppError.serverError(code: httpResponse.statusCode)
         }

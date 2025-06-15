@@ -26,10 +26,12 @@ enum AppError: Error, LocalizedError {
             return "Unable to encode user data."
         case .serverError(let code):
             switch code {
-            case 401:
-                return "Invalid email or password."
             case 400:
                 return "user with this email already exists."
+            case 401:
+                return "Invalid email or password."
+            case 404:
+                return "No Product matches the given query."
             default:
                 return "Unknown server error."
             }

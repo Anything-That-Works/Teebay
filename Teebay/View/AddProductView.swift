@@ -13,11 +13,12 @@ struct AddProductView: View {
     @State private var currentStep = 5
     @State private var errors = [ValidationError]()
     @State private var showErrors = false
+    @State private var showSuccessAlert = false
 
     private let totalSteps = 5
 
     @EnvironmentObject var viewModel: ViewModel
-
+    @Environment(\.dismiss) var dismiss
     var body: some View {
         VStack {
             ProgressView(value: Double(currentStep), total: Double(totalSteps))
@@ -72,6 +73,13 @@ struct AddProductView: View {
             )
             .font(.callout)
         }
+        .alert("Success", isPresented: $showSuccessAlert) {
+            Button("Done") {
+                dismiss()
+            }
+        } message: {
+            Text("Product has been successfully added!")
+        }
     }
 
     func goToPreviousStep() {
@@ -100,6 +108,7 @@ struct AddProductView: View {
             do {
                 let product = try await APIServices.addNewProduct(newProduct)
                 print(product)
+                showSuccessAlert = true
             } catch {
                 print(error)
             }
