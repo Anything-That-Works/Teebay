@@ -7,16 +7,16 @@
 import Foundation
 
 struct Product: Codable {
-    let id: Int
-    let seller: Int
-    let title: String
-    let description: String
-    let categories: [Category]
-    let productImage: Data
-    let purchasePrice: Decimal
-    let rentPrice: Decimal
-    let rentOption: RentOption
-    let datePosted: Date
+    var id: Int
+    var seller: Int
+    var title: String
+    var description: String
+    var categories: [Category]
+    var productImage: Data
+    var purchasePrice: Decimal
+    var rentPrice: Decimal
+    var rentOption: RentOption
+    var datePosted: Date
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -33,6 +33,22 @@ struct Product: Codable {
 }
 
 extension Product {
+    static func empty() -> Product {
+//        previewData[0]
+        Product(
+            id: -1,
+            seller: -1,
+            title: "",
+            description: "",
+            categories: [],
+            productImage: Data(),
+            purchasePrice: 0,
+            rentPrice: 0,
+            rentOption: .day,
+            datePosted: Date()
+        )
+    }
+    
     static let previewData: [Product] = [
         Product(
             id: 0,
