@@ -56,7 +56,9 @@ struct LoginView: View {
                 Text(error?.errorDescription ?? "Something went wrong!!")
             }
             .navigationDestination(isPresented: $navigateToHome) {
-                EmptyView()
+                MyProductsView()
+                    .navigationBarBackButtonHidden()
+                    .navigationBarTitleDisplayMode(.large)
             }
         }
     }

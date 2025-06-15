@@ -9,4 +9,10 @@ import Foundation
 
 class ViewModel: ObservableObject {
     @Published var user: User? = nil
+
+    @Published var products: [Product] = []
+
+    func getUsersProduct(){
+        products = Product.previewData
+    }
 }
