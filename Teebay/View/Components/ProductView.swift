@@ -28,10 +28,10 @@ struct ProductView: View {
 
             HStack {
                 Text("Price:")
-                Text(product.purchasePrice, format: .currency(code: "USD"))
+                Text("$\(product.purchasePrice)")
                 Divider()
                 Text("Rent:")
-                Text(product.rentPrice, format: .currency(code: "USD"))
+                Text("$\(product.rentPrice)")
                 Text(product.rentOption.label)
             }.fixedSize()
 

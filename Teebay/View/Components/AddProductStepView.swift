@@ -11,13 +11,13 @@ struct AddProductStepView: View {
     let index: Int
     @Binding var currentStep: Int
     @Binding var newProduct: Product
-
+    
     @State private var showingImagePicker = false
     @State private var showingCamera = false
     @State private var inputImage: UIImage?
-
+    
     private let maxOffset: CGFloat = 300
-
+    
     var body: some View {
         cardContent
             .padding()
@@ -30,11 +30,11 @@ struct AddProductStepView: View {
             .sheet(isPresented: $showingCamera) {
                 ImagePicker(image: $inputImage, sourceType: .camera)
             }
-            .onChange(of: inputImage) { 
+            .onChange(of: inputImage) {
                 loadImage()
             }
     }
-
+    
     @ViewBuilder
     private var cardContent: some View {
         switch index {
@@ -47,7 +47,7 @@ struct AddProductStepView: View {
         default: errorStep
         }
     }
-
+    
     private var titleStep: some View {
         VStack {
             Text("Select a title for your product")
@@ -58,7 +58,7 @@ struct AddProductStepView: View {
                 .autocorrectionDisabled(true)
         }
     }
-
+    
     private var categoriesStep: some View {
         VStack {
             Text("Select categories")
@@ -88,7 +88,7 @@ struct AddProductStepView: View {
             }
         }
     }
-
+    
     private var descriptionStep: some View {
         VStack {
             Text("Add a description for your product")
@@ -102,12 +102,12 @@ struct AddProductStepView: View {
                 )
         }
     }
-
+    
     private var imageStep: some View {
         VStack(spacing: 30) {
             // Show selected image if available
             if !newProduct.productImage.isEmpty {
-                if let uiImage = UIImage(data: newProduct.productImage) {
+                if let data = Data(base64Encoded: newProduct.productImage), let uiImage = UIImage(data: data) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFit()
@@ -120,61 +120,40 @@ struct AddProductStepView: View {
                     .scaledToFit()
                     .frame(height: 200)
             }
-
+            
             VStack(spacing: 20) {
                 Button("Take Picture using Camera") {
                     showingCamera = true
                 }
                 .buttonStyle(.borderedProminent)
-
+                
                 Button("Upload Picture from Device") {
                     showingImagePicker = true
                 }
                 .buttonStyle(.borderedProminent)
-
-                // Show option to remove image if one is selected
-                if !newProduct.productImage.isEmpty {
-                    Button("Remove Image") {
-                        newProduct.productImage = Data()
-                    }
-                    .buttonStyle(.bordered)
-                    .foregroundColor(.red)
-                }
             }
         }
     }
-
+    
     private var pricingStep: some View {
         VStack(spacing: 30) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Select Price")
                     .font(.headline)
                     .multilineTextAlignment(.center)
-                TextField("", text: Binding(
-                    get: { String(describing: newProduct.purchasePrice) },
-                    set: { newValue in
-                        if let value = Decimal(string: newValue) {
-                            newProduct.purchasePrice = value
-                        }
-                    }
-                ))
-                .roundedBorder()
-                .keyboardType(.decimalPad)
+                TextField("", text: $newProduct.purchasePrice)
+                    .keyboardType(.decimalPad)
+                    .roundedBorder()
+                    .keyboardType(.decimalPad)
             }
             VStack(alignment: .leading, spacing: 0) {
                 Text("Rent Price")
                     .font(.headline)
                     .multilineTextAlignment(.center)
-                TextField("", text: Binding(
-                    get: { String(describing: newProduct.rentPrice) },
-                    set: { newValue in
-                        if let value = Decimal(string: newValue) {
-                            newProduct.rentPrice = value
-                        }
-                    }
-                ))
-                .roundedBorder()
-                .keyboardType(.decimalPad)
+                TextField("", text: $newProduct.rentPrice)
+                    .keyboardType(.decimalPad)
+                    .roundedBorder()
+                    .keyboardType(.decimalPad)
             }
             VStack(alignment: .leading, spacing: 0) {
                 Text("Rent Option")
@@ -188,7 +167,7 @@ struct AddProductStepView: View {
             }
         }
     }
-
+    
     private var summaryStep: some View {
         ScrollView {
             VStack(alignment: .leading) {
@@ -200,27 +179,27 @@ struct AddProductStepView: View {
                 Divider()
                 Text("Description: \(newProduct.description)")
                 Divider()
-                Text("Price: \(newProduct.purchasePrice, format: .currency(code: "USD"))")
+                Text("Price: $\(newProduct.purchasePrice)")
                 Divider()
-                Text("To rent: \(newProduct.rentPrice, format: .currency(code: "USD"))")
+                Text("To rent: $\(newProduct.rentPrice)")
                 Divider()
                 Text("per \(newProduct.rentOption)")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
-
+    
     private var errorStep: some View {
         Text("Something went wrong: Index \(index)")
     }
-
+    
     // Helper function to load the selected image
     private func loadImage() {
         guard let inputImage = inputImage else { return }
-
+        
         // Convert UIImage to Data and store in product
         if let imageData = inputImage.jpegData(compressionQuality: 0.8) {
-            newProduct.productImage = imageData
+            newProduct.productImage = imageData.base64EncodedString()
         }
     }
 }
@@ -229,34 +208,34 @@ struct AddProductStepView: View {
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var image: UIImage?
     let sourceType: UIImagePickerController.SourceType
-
+    
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
         picker.sourceType = sourceType
         return picker
     }
-
+    
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
-
+    
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
-
+    
     class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let parent: ImagePicker
-
+        
         init(_ parent: ImagePicker) {
             self.parent = parent
         }
-
+        
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
             if let uiImage = info[.originalImage] as? UIImage {
                 parent.image = uiImage
             }
             picker.dismiss(animated: true)
         }
-
+        
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             picker.dismiss(animated: true)
         }

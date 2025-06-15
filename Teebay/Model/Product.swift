@@ -12,9 +12,9 @@ struct Product: Codable {
     var title: String
     var description: String
     var categories: [Category]
-    var productImage: Data
-    var purchasePrice: Decimal
-    var rentPrice: Decimal
+    var productImage: String
+    var purchasePrice: String
+    var rentPrice: String
     var rentOption: RentOption
     var datePosted: Date
 
@@ -38,12 +38,12 @@ extension Product {
         Product(
             id: -1,
             seller: -1,
-            title: "",
-            description: "",
-            categories: [],
-            productImage: Data(),
-            purchasePrice: 0,
-            rentPrice: 0,
+            title: "Mango",
+            description: "sweet and tests really good, the goat of fruits",
+            categories: [.outdoor],
+            productImage: "",
+            purchasePrice: "120",
+            rentPrice: "20",
             rentOption: .day,
             datePosted: Date()
         )
@@ -66,9 +66,9 @@ extension Product {
                 Etiam consequat velit nisl, non posuere orci ullamcorper sed. Nam ut luctus sem. Nulla risus justo, interdum sit amet tellus eget, gravida elementum mauris. Aenean elementum augue nec sollicitudin viverra. Nullam ac pharetra mauris. Etiam vel risus sodales, fermentum orci ut, porta odio. Phasellus ut maximus libero. Pellentesque efficitur lacus nec orci pulvinar eleifend nec sed felis. Sed mattis lectus elit, a rhoncus ipsum convallis quis. Vestibulum vitae mollis libero. Nunc efficitur efficitur elit ac porta. Morbi molestie tincidunt dui fermentum bibendum. Mauris vulputate, metus at pharetra rutrum, nulla lorem hendrerit diam, sed facilisis lorem ligula eget augue.
                 """,
             categories: [.electronics],
-            productImage: Data(base64Encoded: "bGFwdG9wX2ltYWdl") ?? Data(),
-            purchasePrice: Decimal(string: "1500") ?? 0,
-            rentPrice: Decimal(string: "50") ?? 0,
+            productImage: "",
+            purchasePrice: "1500",
+            rentPrice: "50",
             rentOption: .day,
             datePosted: ISO8601DateFormatter().date(from: "2025-06-10T09:30:00Z") ?? Date()
         ),
@@ -78,9 +78,9 @@ extension Product {
             title: "Mountain Bike",
             description: "Durable bike for outdoor adventures",
             categories: [.outdoor, .sportingGoods],
-            productImage: Data(base64Encoded: "bW91bnRhaW5fYmlrZV9pbWFnZQ==") ?? Data(),
-            purchasePrice: Decimal(string: "850") ?? 0,
-            rentPrice: Decimal(string: "25") ?? 0,
+            productImage: "",
+            purchasePrice: "1500",
+            rentPrice: "50",
             rentOption: .day,
             datePosted: ISO8601DateFormatter().date(from: "2025-05-20T14:45:00Z") ?? Date()
         ),
@@ -90,9 +90,9 @@ extension Product {
             title: "Office Desk",
             description: "Spacious wooden desk with drawers",
             categories: [.furniture],
-            productImage: Data(base64Encoded: "b2ZmaWNlX2Rlc2tfaW1hZ2U=") ?? Data(),
-            purchasePrice: Decimal(string: "300") ?? 0,
-            rentPrice: Decimal(string: "15") ?? 0,
+            productImage: "",
+            purchasePrice: "1500",
+            rentPrice: "50",
             rentOption: .hour,
             datePosted: ISO8601DateFormatter().date(from: "2025-06-01T08:00:00Z") ?? Date()
         )

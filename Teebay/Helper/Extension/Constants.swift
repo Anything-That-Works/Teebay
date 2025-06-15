@@ -12,4 +12,5 @@ struct Constants {
     static let registerEndpoint = "/users/register/"
     static let loginEndpoint = "/users/login/"
     static let firebaseToken = "dummy_firebase_token_for_testing"
-} 
+    static let addProductEndpoint = "/products/"
+}

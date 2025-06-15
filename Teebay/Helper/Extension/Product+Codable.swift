@@ -10,8 +10,16 @@ import Foundation
 extension Product {
     static func decode(from jsonData: Data) -> Product? {
         let decoder = JSONDecoder()
-        decoder.dataDecodingStrategy = .base64
-        decoder.dateDecodingStrategy = .iso8601
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        decoder.dateDecodingStrategy = .custom { decoder in
+            let container = try decoder.singleValueContainer()
+            let dateString = try container.decode(String.self)
+            guard let date = formatter.date(from: dateString) else {
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Cannot decode date string \(dateString)")
+            }
+            return date
+        }
         do {
             return try decoder.decode(Product.self, from: jsonData)
         } catch {
@@ -22,7 +30,6 @@ extension Product {
 
     func encode() -> Data? {
         let encoder = JSONEncoder()
-        encoder.dataEncodingStrategy = .base64
         encoder.dateEncodingStrategy = .iso8601
         do {
             return try encoder.encode(self)

@@ -60,6 +60,68 @@ class APIServices {
         return authResponse.user
     }
 
+    static func addNewProduct(_ product: Product) async throws -> Product {
+        guard let url = URL(string: Constants.baseURL + Constants.addProductEndpoint) else {
+            print("Invalid URL: \(Constants.baseURL + Constants.addProductEndpoint)")
+            throw AppError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        request.httpBody = createMultipartBody(boundary: boundary, product: product)
+
+        let data = try await Self.makeAPIRequest(using: request)
+
+        guard let decodedProduct = Product.decode(from: data) else {
+            throw AppError.decodingFailed
+        }
+
+        return decodedProduct
+    }
+
+    private static func createMultipartBody(boundary: String, product: Product) -> Data {
+        var body = Data()
+
+        func appendField(name: String, value: String) {
+            if let data = "--\(boundary)\r\n".data(using: .utf8) { body.append(data) }
+            if let data = "Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .utf8) { body.append(data) }
+            if let data = "\(value)\r\n".data(using: .utf8) { body.append(data) }
+        }
+
+        func appendFile(name: String, filename: String, data: Data, mimeType: String) {
+            if let boundary = "--\(boundary)\r\n".data(using: .utf8) { body.append(boundary) }
+            if let disposition = "Content-Disposition: form-data; name=\"\(name)\"; filename=\"\(filename)\"\r\n".data(using: .utf8) { body.append(disposition) }
+            if let contentType = "Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8) { body.append(contentType) }
+            body.append(data)
+            if let newline = "\r\n".data(using: .utf8) { body.append(newline) }
+        }
+
+        appendField(name: "seller", value: "\(product.seller)")
+        appendField(name: "title", value: product.title)
+        appendField(name: "description", value: product.description)
+
+        for category in product.categories {
+            appendField(name: "categories", value: category.rawValue)
+        }
+
+        guard let imageData = Data(base64Encoded: product.productImage) else {
+            print("data converstion failed")
+            return Data()
+        }
+        appendFile(name: "product_image", filename: "image.png", data: imageData, mimeType: "image/png")
+        appendField(name: "purchase_price", value: "\(product.purchasePrice)")
+        appendField(name: "rent_price", value: "\(product.rentPrice)")
+        appendField(name: "rent_option", value: product.rentOption.rawValue)
+
+        if let finalBoundary = "--\(boundary)--\r\n".data(using: .utf8) { body.append(finalBoundary) }
+
+        return body
+    }
+
     private static func makeAPIRequest(using request: URLRequest) async throws -> Data {
         let (data, response) = try await URLSession.shared.data(for: request)
 
@@ -71,6 +133,14 @@ class APIServices {
             return data
         } else {
             throw AppError.serverError(code: httpResponse.statusCode)
+        }
+    }
+}
+
+extension Data {
+    mutating func append(_ string: String) {
+        if let data = string.data(using: .utf8) {
+            self.append(data)
         }
     }
 }

@@ -36,7 +36,7 @@ extension User {
         User(
             id: 2,
             email: "max@well.com",
-            firstName: "Max",
+            firstName: "MAx",
             lastName: "Well",
             address: "Address of Max",
             firebaseConsoleManagerToken: "dummy_firebase_token_for_testing",

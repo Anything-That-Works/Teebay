@@ -9,11 +9,15 @@ import SwiftUI
 
 struct AddProductView: View {
     @State var newProduct = Product.empty()
+
     @State private var currentStep = 5
-    @EnvironmentObject var viewModel: ViewModel
     @State private var errors = [ValidationError]()
     @State private var showErrors = false
+
     private let totalSteps = 5
+
+    @EnvironmentObject var viewModel: ViewModel
+
     var body: some View {
         VStack {
             ProgressView(value: Double(currentStep), total: Double(totalSteps))
@@ -43,13 +47,17 @@ struct AddProductView: View {
             }
             .padding()
         }
-        // TODO: - Finish this later
+        .onAppear {
+            guard let user = viewModel.user else { return print("User not Signed In") }
+            newProduct.seller = user.id
+        }
         .alert("Details Incomplete", isPresented: $showErrors) {
-            ForEach(errors, id: \.self) { error in
-                Text(error.localizedDescription)
-                    .foregroundStyle(.red)
+            Button("OK") {
+                showErrors = false
             }
-            
+        } message: {
+            Text(errors.map { "• \($0.localizedDescription)" }.joined(separator: "\n"))
+                .font(.callout)
         }
     }
 
@@ -75,6 +83,14 @@ struct AddProductView: View {
 
     private func submitProduct() {
         print("Submitting product...")
+        Task {
+            do {
+                let product = try await APIServices.addNewProduct(newProduct)
+                print(product)
+            } catch {
+                print(error)
+            }
+        }
     }
 
 
