@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-fileprivate struct RoundedBorder: ViewModifier {
+private struct RoundedBorder: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(.horizontal, 20)

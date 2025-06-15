@@ -34,7 +34,7 @@ struct Product: Codable {
 
 extension Product {
     static func empty() -> Product {
-//        previewData[0]
+        //        previewData[0]
         Product(
             id: -1,
             seller: -1,
@@ -48,7 +48,7 @@ extension Product {
             datePosted: Date()
         )
     }
-    
+
     static let previewData: [Product] = [
         Product(
             id: 0,
@@ -70,7 +70,9 @@ extension Product {
             purchasePrice: "1500",
             rentPrice: "50",
             rentOption: .day,
-            datePosted: ISO8601DateFormatter().date(from: "2025-06-10T09:30:00Z") ?? Date()
+            datePosted: ISO8601DateFormatter().date(
+                from: "2025-06-10T09:30:00Z"
+            ) ?? Date()
         ),
         Product(
             id: 1,
@@ -82,7 +84,9 @@ extension Product {
             purchasePrice: "1500",
             rentPrice: "50",
             rentOption: .day,
-            datePosted: ISO8601DateFormatter().date(from: "2025-05-20T14:45:00Z") ?? Date()
+            datePosted: ISO8601DateFormatter().date(
+                from: "2025-05-20T14:45:00Z"
+            ) ?? Date()
         ),
         Product(
             id: 2,
@@ -94,11 +98,11 @@ extension Product {
             purchasePrice: "1500",
             rentPrice: "50",
             rentOption: .hour,
-            datePosted: ISO8601DateFormatter().date(from: "2025-06-01T08:00:00Z") ?? Date()
-        )
+            datePosted: ISO8601DateFormatter().date(
+                from: "2025-06-01T08:00:00Z"
+            ) ?? Date()
+        ),
     ]
 
     static let sampleProduct = previewData[0]
 }
-
-

@@ -14,7 +14,9 @@ extension AddProductView {
         var errors: [ValidationError] = []
 
         // Step 0: Title validation
-        if newProduct.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if newProduct.title.trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty
+        {
             errors.append(.emptyTitle)
         } else if newProduct.title.count < 3 {
             errors.append(.titleTooShort)
@@ -28,7 +30,9 @@ extension AddProductView {
         }
 
         // Step 2: Description validation
-        if newProduct.description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if newProduct.description.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        ).isEmpty {
             errors.append(.emptyDescription)
         } else if newProduct.description.count < 10 {
             errors.append(.descriptionTooShort)
@@ -54,7 +58,8 @@ extension AddProductView {
         }
 
         // Additional business logic validations
-        if let purchase = purchasePrice, let rent = rentPrice, rent >= purchase {
+        if let purchase = purchasePrice, let rent = rentPrice, rent >= purchase
+        {
             errors.append(.rentPriceHigherThanPurchase)
         }
 
@@ -64,12 +69,15 @@ extension AddProductView {
     /// Validates a specific step
     /// - Parameter step: The step index to validate
     /// - Returns: Validation result for the specific step
-    func validateStep(_ step: Int) -> (isValid: Bool, errors: [ValidationError]) {
+    func validateStep(_ step: Int) -> (isValid: Bool, errors: [ValidationError])
+    {
         var errors: [ValidationError] = []
 
         switch step {
-        case 0: // Title step
-            if newProduct.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        case 0:  // Title step
+            if newProduct.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                .isEmpty
+            {
                 errors.append(.emptyTitle)
             } else if newProduct.title.count < 3 {
                 errors.append(.titleTooShort)
@@ -77,13 +85,15 @@ extension AddProductView {
                 errors.append(.titleTooLong)
             }
 
-        case 1: // Categories step
+        case 1:  // Categories step
             if newProduct.categories.isEmpty {
                 errors.append(.noCategories)
             }
 
-        case 2: // Description step
-            if newProduct.description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        case 2:  // Description step
+            if newProduct.description.trimmingCharacters(
+                in: .whitespacesAndNewlines
+            ).isEmpty {
                 errors.append(.emptyDescription)
             } else if newProduct.description.count < 10 {
                 errors.append(.descriptionTooShort)
@@ -91,12 +101,12 @@ extension AddProductView {
                 errors.append(.descriptionTooLong)
             }
 
-        case 3: // Image step
+        case 3:  // Image step
             if newProduct.productImage.isEmpty {
                 errors.append(.noImage)
             }
 
-        case 4: // Pricing step
+        case 4:  // Pricing step
             let purchasePrice = Double(newProduct.purchasePrice)
             let rentPrice = Double(newProduct.rentPrice)
 
@@ -108,7 +118,9 @@ extension AddProductView {
                 errors.append(.invalidRentPrice)
             }
 
-            if let purchase = purchasePrice, let rent = rentPrice, rent >= purchase {
+            if let purchase = purchasePrice, let rent = rentPrice,
+                rent >= purchase
+            {
                 errors.append(.rentPriceHigherThanPurchase)
             }
 
@@ -185,7 +197,8 @@ enum ValidationError: CaseIterable, Hashable {
             return 2
         case .noImage:
             return 3
-        case .invalidPurchasePrice, .invalidRentPrice, .rentPriceHigherThanPurchase:
+        case .invalidPurchasePrice, .invalidRentPrice,
+            .rentPriceHigherThanPurchase:
             return 4
         }
     }

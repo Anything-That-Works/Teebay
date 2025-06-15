@@ -16,17 +16,24 @@ struct MyProductsView: View {
                     ProductView(item)
                 }
             }
-            NavigationLink(destination: EmptyView()) {
+            NavigationLink(destination: AddProductView()) {
                 Image(systemName: "plus.circle")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 50)
-
             }
         }
         .padding(.horizontal)
         .navigationTitle("My Products")
-        .onAppear(perform: viewModel.getUsersProduct)
+        .onAppear(perform: viewModel.getProducts)
+        .alert("Error", isPresented: $viewModel.showErrorAlert) {
+            Button("Retry", action: viewModel.getProducts)
+        } message: {
+            Text(
+                viewModel.processError?.errorDescription
+                    ?? "Something went wrong!!"
+            )
+        }
     }
 }
 

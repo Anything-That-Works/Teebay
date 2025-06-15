@@ -5,7 +5,6 @@
 //  Created by Promal on 15/6/25.
 //
 
-
 import SwiftUI
 
 struct LoginView: View {
@@ -64,11 +63,14 @@ struct LoginView: View {
     }
 
     private func loginButtonAction() {
-        if (input.email.isEmpty || input.password.isEmpty) { return }
+        if input.email.isEmpty || input.password.isEmpty { return }
         isLoading = true
         Task {
             do {
-                let user = try await APIServices.login(email: input.email, password: input.password)
+                let user = try await APIServices.login(
+                    email: input.email,
+                    password: input.password
+                )
                 viewModel.user = user
                 navigateToHome = true
             } catch let appError as AppError {
@@ -92,7 +94,6 @@ struct LoginView: View {
         var password = "123123"
     }
 }
-
 
 #Preview {
     LoginView()

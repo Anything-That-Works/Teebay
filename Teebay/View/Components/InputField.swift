@@ -5,7 +5,6 @@
 //  Created by Promal on 15/6/25.
 //
 
-
 import SwiftUI
 
 struct InputField: View {
@@ -15,7 +14,7 @@ struct InputField: View {
     var isSecure: Bool = false
     var body: some View {
         VStack(alignment: .leading) {
-            if (isSecure) {
+            if isSecure {
                 SecureField(hint, text: $input)
                     .roundedBorder()
                     .autocorrectionDisabled(true)
@@ -24,7 +23,7 @@ struct InputField: View {
                     .roundedBorder()
                     .autocorrectionDisabled(true)
             }
-            if (!issue.isEmpty) {
+            if !issue.isEmpty {
                 Text(issue)
                     .font(.footnote)
                     .foregroundStyle(Color.red)

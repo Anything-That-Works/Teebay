@@ -26,4 +26,3 @@ enum Category: String, Codable, CaseIterable {
         }
     }
 }
-

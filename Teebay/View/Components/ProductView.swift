@@ -19,21 +19,26 @@ struct ProductView: View {
 
     var body: some View {
         VStack(alignment: .leading) {
-            Text(product.title)
-                .font(.title2.bold())
-            if !product.categories.isEmpty {
-                Text("Categories: ") +
-                Text(product.categories.map { $0.rawValue }.joined(separator: ", "))
-            }
-
             HStack {
-                Text("Price:")
-                Text("$\(product.purchasePrice)")
-                Divider()
-                Text("Rent:")
-                Text("$\(product.rentPrice)")
-                Text(product.rentOption.label)
-            }.fixedSize()
+                RemoteImageView(url: URL(string: product.productImage))
+                VStack(alignment: .leading) {
+                    Text(product.title)
+                        .font(.title2.bold())
+                    if !product.categories.isEmpty {
+                        Text("Categories: ")
+                            + Text(
+                                product.categories.map { $0.rawValue }.joined(
+                                    separator: ", "
+                                )
+                            )
+                    }
+                    HStack {
+                        Text("Price: $\(product.purchasePrice)")
+                        Text("Rent: $\(product.rentPrice)")
+                        Text(product.rentOption.label)
+                    }
+                }
+            }
 
             // Expandable description section
             VStack(alignment: .leading, spacing: 8) {
@@ -55,7 +60,6 @@ struct ProductView: View {
                             )
                     )
 
-
                 if isTruncated {
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.3)) {
@@ -68,11 +72,14 @@ struct ProductView: View {
                         // Start auto-collapse timer when expanding
                         if isDescriptionExpanded {
                             autoCollapseTask = Task {
-                                try? await Task.sleep(nanoseconds: 10_000_000_000) // 10 seconds
+                                try? await Task.sleep(
+                                    nanoseconds: 10_000_000_000
+                                )  // 10 seconds
 
                                 if !Task.isCancelled {
                                     await MainActor.run {
-                                        withAnimation(.easeInOut(duration: 0.3)) {
+                                        withAnimation(.easeInOut(duration: 0.3))
+                                        {
                                             isDescriptionExpanded = false
                                         }
                                     }
@@ -80,14 +87,19 @@ struct ProductView: View {
                             }
                         }
                     }) {
-                        Text(isDescriptionExpanded ? "Less Details" : "More Details")
-                            .font(.caption)
-                            .foregroundColor(.blue)
+                        Text(
+                            isDescriptionExpanded
+                                ? "Less Details" : "More Details"
+                        )
+                        .font(.caption)
+                        .foregroundColor(.blue)
                     }
                 }
             }
 
-            Text("Date Posted: \(product.datePosted.formatted(.dateTime.day().month(.wide).year()))")
+            Text(
+                "Date Posted: \(product.datePosted.formatted(.dateTime.day().month(.wide).year()))"
+            )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()

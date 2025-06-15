@@ -5,8 +5,8 @@
 //  Created by Promal on 15/6/25.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 class RegistrationViewModel: ObservableObject {
     @Published var formData = RegistrationFormData()
@@ -15,32 +15,31 @@ class RegistrationViewModel: ObservableObject {
     @Published var showErrorAlert: Bool = false
     @Published var processError: AppError?
     private var cancellables = Set<AnyCancellable>()
-    
+
     var hasEmptyFields: Bool {
-        formData.firstName.isEmpty ||
-        formData.lastName.isEmpty ||
-        formData.address.isEmpty ||
-        formData.email.isEmpty ||
-        formData.password.isEmpty
+        formData.firstName.isEmpty || formData.lastName.isEmpty
+            || formData.address.isEmpty || formData.email.isEmpty
+            || formData.password.isEmpty
     }
-    
+
     var passwordsMatch: Bool {
         formData.password == confirmPassword
     }
-    
+
     @Published var confirmPassword: String = "123123!aA"
 
     init() {
-        print("RegistrationViewModel initialised")
+        print(#function)
         setupValidationPublishers()
     }
 
     deinit {
-        print("RegistrationViewModel deallocated")
+        print(#function)
         cancellables.removeAll()
     }
 
     func registerButtonAction() {
+        print(#function)
         Task {
             do {
                 let user = try await APIServices.register(using: formData)
@@ -62,8 +61,8 @@ class RegistrationViewModel: ObservableObject {
         }
     }
 
-
     func resetForm() {
+        print(#function)
         formData = RegistrationFormData()
         confirmPassword = ""
         fieldErrors = RegistrationFieldErrors()
@@ -71,8 +70,8 @@ class RegistrationViewModel: ObservableObject {
         processError = nil
     }
 
-
     private func setupValidationPublishers() {
+        print(#function)
         // First Name validation
         $formData
             .map(\.firstName)
@@ -161,8 +160,9 @@ class RegistrationViewModel: ObservableObject {
     // MARK: - Validation Methods
 
     private func validateFirstName(_ firstName: String) -> String {
+        print(#function)
         guard !firstName.isEmpty else {
-            return "" // Return empty for empty field (neutral state)
+            return ""  // Return empty for empty field (neutral state)
         }
 
         if firstName.count < 2 {
@@ -175,10 +175,11 @@ class RegistrationViewModel: ObservableObject {
             return "First name contains invalid characters"
         }
 
-        return "" // Valid
+        return ""  // Valid
     }
 
     private func validateLastName(_ lastName: String) -> String {
+        print(#function)
         guard !lastName.isEmpty else {
             return ""
         }
@@ -197,6 +198,7 @@ class RegistrationViewModel: ObservableObject {
     }
 
     private func validateAddress(_ address: String) -> String {
+        print(#function)
         guard !address.isEmpty else {
             return ""
         }
@@ -213,6 +215,7 @@ class RegistrationViewModel: ObservableObject {
     }
 
     private func validateEmail(_ email: String) -> String {
+        print(#function)
         guard !email.isEmpty else {
             return ""
         }
@@ -223,7 +226,9 @@ class RegistrationViewModel: ObservableObject {
         if !emailPredicate.evaluate(with: email) {
             if !email.contains("@") {
                 return "Email must contain @"
-            } else if !email.contains(".") || email.split(separator: "@").count != 2 {
+            } else if !email.contains(".")
+                || email.split(separator: "@").count != 2
+            {
                 return "Invalid email format"
             } else if email.hasSuffix("@") || email.hasSuffix(".") {
                 return "Incomplete email address"
@@ -236,6 +241,7 @@ class RegistrationViewModel: ObservableObject {
     }
 
     private func validatePassword(_ password: String) -> String {
+        print(#function)
         guard !password.isEmpty else {
             return ""
         }
@@ -248,10 +254,17 @@ class RegistrationViewModel: ObservableObject {
             return "Password is too long (max 50 characters)"
         }
 
-        let hasUppercase = password.range(of: "[A-Z]", options: .regularExpression) != nil
-        let hasLowercase = password.range(of: "[a-z]", options: .regularExpression) != nil
-        let hasNumber = password.range(of: "[0-9]", options: .regularExpression) != nil
-        let hasSpecialChar = password.range(of: "[!@#$%^&*(),.?\":{}|<>]", options: .regularExpression) != nil
+        let hasUppercase =
+            password.range(of: "[A-Z]", options: .regularExpression) != nil
+        let hasLowercase =
+            password.range(of: "[a-z]", options: .regularExpression) != nil
+        let hasNumber =
+            password.range(of: "[0-9]", options: .regularExpression) != nil
+        let hasSpecialChar =
+            password.range(
+                of: "[!@#$%^&*(),.?\":{}|<>]",
+                options: .regularExpression
+            ) != nil
 
         if !hasUppercase {
             return "Password must contain at least one uppercase letter"
@@ -272,5 +285,3 @@ class RegistrationViewModel: ObservableObject {
         return ""
     }
 }
-
-

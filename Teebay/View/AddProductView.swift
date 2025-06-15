@@ -28,7 +28,11 @@ struct AddProductView: View {
 
             ZStack {
                 ForEach(0...totalSteps, id: \.self) { index in
-                    AddProductStepView(index: index, currentStep: $currentStep, newProduct: $newProduct)
+                    AddProductStepView(
+                        index: index,
+                        currentStep: $currentStep,
+                        newProduct: $newProduct
+                    )
                 }
             }
 
@@ -42,13 +46,18 @@ struct AddProductView: View {
 
                 Spacer()
 
-                Button(currentStep == 5 ? "Submit" : "Next", action: goToNextStep)
-                    .buttonStyle(.borderedProminent)
+                Button(
+                    currentStep == 5 ? "Submit" : "Next",
+                    action: goToNextStep
+                )
+                .buttonStyle(.borderedProminent)
             }
             .padding()
         }
         .onAppear {
-            guard let user = viewModel.user else { return print("User not Signed In") }
+            guard let user = viewModel.user else {
+                return print("User not Signed In")
+            }
             newProduct.seller = user.id
         }
         .alert("Details Incomplete", isPresented: $showErrors) {
@@ -56,8 +65,12 @@ struct AddProductView: View {
                 showErrors = false
             }
         } message: {
-            Text(errors.map { "• \($0.localizedDescription)" }.joined(separator: "\n"))
-                .font(.callout)
+            Text(
+                errors.map { "• \($0.localizedDescription)" }.joined(
+                    separator: "\n"
+                )
+            )
+            .font(.callout)
         }
     }
 
@@ -72,7 +85,7 @@ struct AddProductView: View {
             currentStep += 1
         } else {
             let validationResult = validateProduct()
-            if (validationResult.isValid) {
+            if validationResult.isValid {
                 submitProduct()
             } else {
                 errors = validationResult.errors
@@ -92,8 +105,6 @@ struct AddProductView: View {
             }
         }
     }
-
-
 }
 
 #Preview {
@@ -102,4 +113,3 @@ struct AddProductView: View {
     return AddProductView()
         .environmentObject(viewModel)
 }
-

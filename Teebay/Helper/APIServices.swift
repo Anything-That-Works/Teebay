@@ -10,18 +10,25 @@ import Foundation
 class APIServices {
     public var shared: APIServices = APIServices()
 
-    static func register(using data: RegistrationFormData) async throws -> User {
+    static func register(using data: RegistrationFormData) async throws -> User
+    {
         let payload: [String: Any] = [
             "email": data.email,
             "password": data.password,
             "first_name": data.firstName,
             "last_name": data.lastName,
             "address": data.address,
-            "firebase_console_manager_token": Constants.firebaseToken
+            "firebase_console_manager_token": Constants.firebaseToken,
         ]
 
-        guard let url = URL(string: Constants.baseURL + Constants.registerEndpoint) else {
-            print("Invalid URL: \(Constants.baseURL + Constants.registerEndpoint)")
+        guard
+            let url = URL(
+                string: Constants.baseURL + Constants.registerEndpoint
+            )
+        else {
+            print(
+                "Invalid URL: \(Constants.baseURL + Constants.registerEndpoint)"
+            )
             throw AppError.invalidURL
         }
 
@@ -43,7 +50,7 @@ class APIServices {
     static func login(email: String, password: String) async throws -> User {
         let payload = [
             "email": email,
-            "password": password
+            "password": password,
         ]
 
         let url = URL(string: Constants.baseURL + Constants.loginEndpoint)!
@@ -61,8 +68,14 @@ class APIServices {
     }
 
     static func addNewProduct(_ product: Product) async throws -> Product {
-        guard let url = URL(string: Constants.baseURL + Constants.addProductEndpoint) else {
-            print("Invalid URL: \(Constants.baseURL + Constants.addProductEndpoint)")
+        guard
+            let url = URL(
+                string: Constants.baseURL + Constants.addProductEndpoint
+            )
+        else {
+            print(
+                "Invalid URL: \(Constants.baseURL + Constants.addProductEndpoint)"
+            )
             throw AppError.invalidURL
         }
 
@@ -70,9 +83,15 @@ class APIServices {
         request.httpMethod = "POST"
 
         let boundary = "Boundary-\(UUID().uuidString)"
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue(
+            "multipart/form-data; boundary=\(boundary)",
+            forHTTPHeaderField: "Content-Type"
+        )
 
-        request.httpBody = createMultipartBody(boundary: boundary, product: product)
+        request.httpBody = createMultipartBody(
+            boundary: boundary,
+            product: product
+        )
 
         let data = try await Self.makeAPIRequest(using: request)
 
@@ -83,19 +102,72 @@ class APIServices {
         return decodedProduct
     }
 
-    private static func createMultipartBody(boundary: String, product: Product) -> Data {
+    static func getProducts() async throws -> [Product] {
+        guard
+            let url = URL(
+                string: Constants.baseURL + Constants.getProductsEndpoint
+            )
+        else {
+            print(
+                "Invalid URL: \(Constants.baseURL + Constants.getProductsEndpoint)"
+            )
+            throw AppError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let data = try await Self.makeAPIRequest(using: request)
+
+        guard let products = Product.decodeArray(from: data) else {
+            throw AppError.decodingFailed
+        }
+
+        return products
+    }
+
+    private static func createMultipartBody(boundary: String, product: Product)
+    -> Data
+    {
         var body = Data()
 
         func appendField(name: String, value: String) {
-            if let data = "--\(boundary)\r\n".data(using: .utf8) { body.append(data) }
-            if let data = "Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .utf8) { body.append(data) }
-            if let data = "\(value)\r\n".data(using: .utf8) { body.append(data) }
+            if let data = "--\(boundary)\r\n".data(using: .utf8) {
+                body.append(data)
+            }
+            if let data =
+                "Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(
+                    using: .utf8
+                )
+            {
+                body.append(data)
+            }
+            if let data = "\(value)\r\n".data(using: .utf8) {
+                body.append(data)
+            }
         }
 
-        func appendFile(name: String, filename: String, data: Data, mimeType: String) {
-            if let boundary = "--\(boundary)\r\n".data(using: .utf8) { body.append(boundary) }
-            if let disposition = "Content-Disposition: form-data; name=\"\(name)\"; filename=\"\(filename)\"\r\n".data(using: .utf8) { body.append(disposition) }
-            if let contentType = "Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8) { body.append(contentType) }
+        func appendFile(
+            name: String,
+            filename: String,
+            data: Data,
+            mimeType: String
+        ) {
+            if let boundary = "--\(boundary)\r\n".data(using: .utf8) {
+                body.append(boundary)
+            }
+            if let disposition =
+                "Content-Disposition: form-data; name=\"\(name)\"; filename=\"\(filename)\"\r\n"
+                .data(using: .utf8)
+            {
+                body.append(disposition)
+            }
+            if let contentType = "Content-Type: \(mimeType)\r\n\r\n".data(
+                using: .utf8
+            ) {
+                body.append(contentType)
+            }
             body.append(data)
             if let newline = "\r\n".data(using: .utf8) { body.append(newline) }
         }
@@ -112,17 +184,26 @@ class APIServices {
             print("data converstion failed")
             return Data()
         }
-        appendFile(name: "product_image", filename: "image.png", data: imageData, mimeType: "image/png")
+        appendFile(
+            name: "product_image",
+            filename: "image.png",
+            data: imageData,
+            mimeType: "image/png"
+        )
         appendField(name: "purchase_price", value: "\(product.purchasePrice)")
         appendField(name: "rent_price", value: "\(product.rentPrice)")
         appendField(name: "rent_option", value: product.rentOption.rawValue)
 
-        if let finalBoundary = "--\(boundary)--\r\n".data(using: .utf8) { body.append(finalBoundary) }
+        if let finalBoundary = "--\(boundary)--\r\n".data(using: .utf8) {
+            body.append(finalBoundary)
+        }
 
         return body
     }
 
-    private static func makeAPIRequest(using request: URLRequest) async throws -> Data {
+    private static func makeAPIRequest(using request: URLRequest) async throws
+    -> Data
+    {
         let (data, response) = try await URLSession.shared.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse else {

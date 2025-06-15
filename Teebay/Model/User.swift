@@ -41,7 +41,9 @@ extension User {
             address: "Address of Max",
             firebaseConsoleManagerToken: "dummy_firebase_token_for_testing",
             password: "123123",
-            dateJoined: ISO8601DateFormatter().date(from: "2025-06-10T23:57:48.171582Z") ?? Date()
+            dateJoined: ISO8601DateFormatter().date(
+                from: "2025-06-10T23:57:48.171582Z"
+            ) ?? Date()
         ),
         User(
             id: 1,
@@ -62,7 +64,7 @@ extension User {
             firebaseConsoleManagerToken: "test_token_456",
             password: "securepass",
             dateJoined: Date().addingTimeInterval(-172800)
-        )
+        ),
     ]
 
     static let sampleUser = previewData[0]
