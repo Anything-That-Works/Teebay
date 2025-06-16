@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct EditProductView: View {
-    @State var product: Product = Product.empty()
+    @State var product: Product
     @State private var productSnapShot: Product = Product.empty()
-    @EnvironmentObject var viewModel: ViewModel
-    @Environment(\.dismiss) var dismiss
+    
+    @EnvironmentObject private var viewModel: ViewModel
+    @EnvironmentObject private var navigationHelper: NavigationHelper
 
+    @State private var showSuccessAlert: Bool = false
     var body: some View {
         ScrollView {
             VStack {
@@ -85,29 +87,52 @@ struct EditProductView: View {
                 
                 pricingStep
 
-                Button {
-                    viewModel.updateProduct(using: product)
-                } label: {
-                    Text("Confirm Changes")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(!hasChanges())
+                VStack {
+                    Button {
+                        viewModel.updateProduct(using: product)
+                        if (viewModel.processError == nil) {
+                            showSuccessAlert = true
+                        }
+                    } label: {
+                        Text("Confirm Changes")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!hasChanges())
 
-                Button {
-                    dismiss()
-                } label: {
-                    Text("Cancel")
-                        .frame(maxWidth: .infinity)
+                    Button {
+                        navigationHelper.pop()
+                    } label: {
+                        Text("Cancel")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.red)
+                .padding(.top, 20)
 
             }
             .padding(.horizontal)
             .navigationTitle("Edit")
             .onAppear {
                 self.productSnapShot = product
+            }
+            .alert("Error", isPresented: $viewModel.showErrorAlert) {
+                Button("OK", role: .cancel) {
+                    viewModel.processError = nil
+                }
+            } message: {
+                Text(
+                    viewModel.processError?.errorDescription
+                        ?? "Something went wrong!!"
+                )
+            }
+            .alert("Success", isPresented: $showSuccessAlert) {
+                Button("Done") {
+                    navigationHelper.pop()
+                }
+            } message: {
+                Text("Product has been successfully updated!")
             }
         }
     }
@@ -144,7 +169,15 @@ struct EditProductView: View {
                 .pickerStyle(.segmented)
             }
         }
-
+        .overlay {
+            if viewModel.isProcessingRequest {
+                ProgressView("Updating...")
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .cornerRadius(8)
+                    .shadow(radius: 4)
+            }
+        }
     }
 
     private func hasChanges() -> Bool {
@@ -162,7 +195,7 @@ struct EditProductView: View {
     let viewModel = ViewModel()
     viewModel.user = User.sampleUser
     return NavigationStack {
-        EditProductView()
+        EditProductView(product: Product.empty())
             .environmentObject(viewModel)
     }
 }

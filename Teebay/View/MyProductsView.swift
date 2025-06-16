@@ -8,62 +8,67 @@
 import SwiftUI
 
 struct MyProductsView: View {
-    @EnvironmentObject var viewModel: ViewModel
+    @EnvironmentObject private var viewModel: ViewModel
+    @EnvironmentObject private var navigationHelper: NavigationHelper
     @State private var showDeleteAlert = false
-    @State private var indexSetToDelete: IndexSet?
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            List {
-                ForEach(viewModel.products, id: \.id) { item in
-                    NavigationLink {
-                        EditProductView(product: item)
-                    } label: {
-                        ProductView(item)
+        ZStack {
+            VStack(alignment: .leading) {
+                HStack {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.isShowingMenu.toggle()
+                            print("Show Menu")
+                        }
+                    }) {
+                        Image(systemName: "line.3.horizontal")
+                            .font(.title2)
                     }
-
+                    Text("My Products")
+                        .font(.largeTitle.bold())
                 }
-                .onDelete { indexSet in
-                    indexSetToDelete = indexSet
-                    showDeleteAlert = true
+                .padding(.horizontal)
+                .padding(.bottom)
+                ZStack(alignment: .bottomTrailing) {
+                    List {
+                        ForEach(viewModel.products.filter { $0.seller == viewModel.user?.id }, id: \.id) { item in
+                            Button {
+                                navigationHelper.push(AppRoute.editProductView(product: item))
+                            } label: {
+                                ProductView(item)
+                            }
+                        }
+                    }
+                    .listStyle(PlainListStyle())
+                    .disabled(viewModel.isProcessingRequest || viewModel.isShowingMenu)
+                    Button {
+                        navigationHelper.push(AppRoute.addProductView)
+                    } label: {
+                        Image(systemName: "plus.circle")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50)
+                            .padding(.horizontal)
+                    }
+                    .disabled(viewModel.isProcessingRequest || viewModel.isShowingMenu)
                 }
             }
-            .listStyle(PlainListStyle())
-            .disabled(viewModel.isDeleting)
-
-            NavigationLink(destination: AddProductView()) {
-                Image(systemName: "plus.circle")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 50)
-                    .padding(.horizontal)
-            }
-            .disabled(viewModel.isDeleting)
+            SideMenuView(currentView: .myProducts)
         }
-        .navigationTitle("My Products")
         .onAppear(perform: viewModel.getProducts)
-        .alert("Confirm Delete", isPresented: $showDeleteAlert) {
-            Button("Delete", role: .destructive) {
-                if let indexSet = indexSetToDelete {
-                    print(indexSet)
-                    viewModel.deleteProduct(at: indexSet)
-                }
-            }
-            Button("Cancel", role: .cancel) {
-                indexSetToDelete = nil
-            }
-        } message: {
-            Text("Are you sure you want to delete this item?")
-        }
         .alert("Error", isPresented: $viewModel.showErrorAlert) {
             Button("OK", role: .cancel) {
                 viewModel.processError = nil
             }
         } message: {
-            Text(viewModel.processError?.errorDescription ?? "Something went wrong!!")
+            Text(
+                viewModel.processError?.errorDescription
+                    ?? "Something went wrong!!"
+            )
         }
         .overlay {
-            if viewModel.isDeleting {
+            if viewModel.isProcessingRequest {
                 ProgressView("Deleting...")
                     .padding()
                     .background(Color(.systemBackground))
@@ -80,6 +85,6 @@ struct MyProductsView: View {
 
     return NavigationStack {
         MyProductsView()
-            .environmentObject(viewModel)
+            .injectEnvironmentObjects(viewModel: viewModel)
     }
 }

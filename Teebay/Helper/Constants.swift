@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 struct Constants {
     static let baseURL = "http://127.0.0.1:8000/api"
@@ -15,5 +16,8 @@ struct Constants {
     static let addProductEndpoint = "/products/"
     static let getProductsEndpoint = "/products/"
     static let deleteProductEndpoint = "/products/"
-    static let updateProductEndpoint = "/products/{id}/"
+    static let updateProductEndpoint = "/products/"
+
+    static let minVisibleWidth = 120.0
+    static let mainviewOffset = UIScreen.main.bounds.width - minVisibleWidth
 }

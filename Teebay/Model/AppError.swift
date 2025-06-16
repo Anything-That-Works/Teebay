@@ -12,10 +12,13 @@ enum AppError: Error, LocalizedError {
     case invalidResponse
     case decodingFailed
     case encodingFailed
-    case serverError(code: Int? = nil)
+    case unknownError
+    case serverError(code: HTTPURLResponse)
 
     var errorDescription: String? {
         switch self {
+        case .unknownError:
+            return "Unknown error."
         case .invalidURL:
             return "Invalid URL."
         case .invalidResponse:
@@ -25,7 +28,7 @@ enum AppError: Error, LocalizedError {
         case .encodingFailed:
             return "Unable to encode user data."
         case .serverError(let code):
-            switch code {
+            switch code.statusCode {
             case 400:
                 return "user with this email already exists."
             case 401:

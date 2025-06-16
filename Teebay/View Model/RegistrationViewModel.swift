@@ -54,7 +54,7 @@ class RegistrationViewModel: ObservableObject {
                 }
             } catch {
                 await MainActor.run {
-                    processError = AppError.serverError()
+                    processError = AppError.unknownError
                     showErrorAlert = true
                 }
             }

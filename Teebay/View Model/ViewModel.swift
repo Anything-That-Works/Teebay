@@ -13,27 +13,17 @@ class ViewModel: ObservableObject {
     @Published var products: [Product] = []
     @Published var processError: AppError?
     @Published var showErrorAlert: Bool = false
-    @Published var isDeleting: Bool = false
+    @Published var isProcessingRequest: Bool = false
+    @Published var isShowingMenu = false
 
     func getProducts() {
         print(#function)
-        Task {
-            do {
-                let products = try await APIServices.getProducts()
-                await MainActor.run {
-                    withAnimation {
-                        self.products = products
-                    }
-                }
-            } catch let appError as AppError {
-                await MainActor.run {
-                    processError = appError
-                    showErrorAlert = true
-                }
-            } catch {
-                await MainActor.run {
-                    processError = AppError.serverError()
-                    showErrorAlert = true
+        runAsyncWithErrorHandling {
+            let products = try await APIServices.getProducts()
+            await MainActor.run {
+                withAnimation {
+                    self.products = products
+                    self.isProcessingRequest = false
                 }
             }
         }
@@ -41,63 +31,68 @@ class ViewModel: ObservableObject {
 
     func updateProduct(using data: Product) {
         print(#function)
-        Task {
-            do {
-                let products = try await APIServices.updateProduct(product: data)
-                dump(products)
-                await MainActor.run {
-                    withAnimation {
-                        self.getProducts()
-                    }
-                }
-            } catch let appError as AppError {
-                await MainActor.run {
-                    processError = appError
-                    showErrorAlert = true
-                }
-            } catch {
-                await MainActor.run {
-                    processError = AppError.serverError()
-                    showErrorAlert = true
-                }
+        isProcessingRequest = true
+        runAsyncWithErrorHandling {
+            let products = try await APIServices.updateProduct(product: data)
+            print("Product Updated \(products.id)")
+            withAnimation {
+                self.getProducts()
             }
         }
     }
 
-    func deleteProduct(at offsets: IndexSet) {
+    func addNewProduct(_ product: Product) {
         print(#function)
-        Task {
-            await MainActor.run {
-                isDeleting = true
-            }
-            
-            do {
-                // Delete products sequentially to maintain order
-                for index in offsets {
-                    let product = products[index]
-                    try await APIServices.deleteProduct(id: product.id)
-                }
-                
-                // Update local state after successful deletion
-                await MainActor.run {
-                    products.remove(atOffsets: offsets)
-                    isDeleting = false
-                }
-            } catch let appError as AppError {
-                await MainActor.run {
-                    processError = appError
-                    showErrorAlert = true
-                    isDeleting = false
-                }
-            } catch {
-                await MainActor.run {
-                    processError = AppError.serverError()
-                    showErrorAlert = true
-                    isDeleting = false
-                }
+        isProcessingRequest = true
+        runAsyncWithErrorHandling {
+            let product = try await APIServices.addNewProduct(product)
+            print("\(product.title) added at \(product.id)")
+            withAnimation {
+                self.getProducts()
             }
         }
     }
 
+    func delete(product: Product) {
+        print(#function)
+        isProcessingRequest = true
+        runAsyncWithErrorHandling {
+            try await APIServices.deleteProduct(id: product.id)
+            withAnimation {
+                self.getProducts()
+            }
+        }
+    }
 
+    func reset() {
+        print(#function)
+        withAnimation {
+            user = nil
+            products = []
+            isShowingMenu = false
+        }
+        processError = nil
+        showErrorAlert = false
+        isProcessingRequest = false
+    }
+
+    func runAsyncWithErrorHandling(
+        _ operation: @escaping () async throws -> Void
+    ) {
+        Task {
+            do {
+                try await operation()
+            } catch let appError as AppError {
+                await MainActor.run {
+                    processError = appError
+                    showErrorAlert = true
+                }
+            } catch {
+                await MainActor.run {
+                    processError = AppError.unknownError
+                    showErrorAlert = true
+                }
+            }
+        }
+    }
 }

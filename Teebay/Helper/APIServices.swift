@@ -144,20 +144,28 @@ class APIServices {
     }
 
     static func updateProduct(product: Product) async throws -> Product {
+        // If you have a new image to upload
+        var imageData: Data? = nil
+        if let imageURL = URL(string: product.productImage) {
+            let imageURLRequest = URLRequest(url: imageURL)
+            let response = try await makeAPIRequest(using: imageURLRequest)
+            imageData = response.data
+        }
+
         guard let url = URL(string: Constants.baseURL + Constants.updateProductEndpoint + "\(product.id)/") else {
             print("Invalid URL: \(Constants.baseURL + Constants.updateProductEndpoint)\(product.id)/")
             throw AppError.invalidURL
         }
 
         var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
+        request.httpMethod = "PATCH"
 
         let boundary = "Boundary-\(UUID().uuidString)"
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
-        request.httpBody = createMultipartBody(boundary: boundary, product: product)
+        request.httpBody = createMultipartBody(boundary: boundary, product: product, data: imageData)
 
-        let response = try await Self.makeAPIRequest(using: request)
+        let response = try await makeAPIRequest(using: request)
 
         guard let updatedProduct = Product.decode(from: response.data) else {
             throw AppError.decodingFailed
@@ -166,7 +174,7 @@ class APIServices {
         return updatedProduct
     }
 
-    private static func createMultipartBody(boundary: String, product: Product)
+    private static func createMultipartBody(boundary: String, product: Product, data: Data? = nil)
     -> Data
     {
         var body = Data()
@@ -219,16 +227,24 @@ class APIServices {
             appendField(name: "categories", value: category.rawValue)
         }
 
-        guard let imageData = Data(base64Encoded: product.productImage) else {
-            print("data converstion failed")
-            return Data()
+
+        if let imageData = data {
+            appendFile(
+                name: "product_image",
+                filename: "image.png",
+                data: imageData,
+                mimeType: "image/png"
+            )
+        } else if let imageData = Data(base64Encoded: product.productImage){
+            appendFile(
+                name: "product_image",
+                filename: "image.png",
+                data: imageData,
+                mimeType: "image/png"
+            )
+        } else {
+            print("No image data provided")
         }
-        appendFile(
-            name: "product_image",
-            filename: "image.png",
-            data: imageData,
-            mimeType: "image/png"
-        )
         appendField(name: "purchase_price", value: "\(product.purchasePrice)")
         appendField(name: "rent_price", value: "\(product.rentPrice)")
         appendField(name: "rent_option", value: product.rentOption.rawValue)
@@ -252,7 +268,7 @@ class APIServices {
         if (200...299).contains(httpResponse.statusCode) {
             return (data, httpResponse)
         } else {
-            throw AppError.serverError(code: httpResponse.statusCode)
+            throw AppError.serverError(code: httpResponse)
         }
     }
 }

@@ -24,3 +24,18 @@ extension View {
         self.modifier(RoundedBorder())
     }
 }
+
+extension View {
+    func getBounds() -> CGRect {
+        return UIScreen.main.bounds
+    }
+}
+
+// Add a new view modifier for injecting environment objects
+extension View {
+    func injectEnvironmentObjects(viewModel: ViewModel = ViewModel(), navigationHelper: NavigationHelper = NavigationHelper()) -> some View {
+        self
+            .environmentObject(viewModel)
+            .environmentObject(navigationHelper)
+    }
+}

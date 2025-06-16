@@ -12,53 +12,46 @@ struct LoginView: View {
     @State private var error: AppError?
     @State private var showAlert = false
     @State private var isLoading = false
-    @State private var navigateToHome = false
 
-    @EnvironmentObject var viewModel: ViewModel
-
+    @EnvironmentObject private var viewModel: ViewModel
+    @EnvironmentObject private var navigationHelper: NavigationHelper
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 50) {
-                Text("Sign In")
-                    .font(.largeTitle.bold())
+        VStack(spacing: 50) {
+            Text("Sign In")
+                .font(.largeTitle.bold())
 
-                VStack(alignment: .leading, spacing: 20) {
-                    TextField("Email", text: $input.email)
-                        .textContentType(.emailAddress)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .roundedBorder()
-                    SecureField("Password", text: $input.password)
-                        .textContentType(.password)
-                        .roundedBorder()
-                }
+            VStack(alignment: .leading, spacing: 20) {
+                TextField("Email", text: $input.email)
+                    .textContentType(.emailAddress)
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
+                    .roundedBorder()
+                SecureField("Password", text: $input.password)
+                    .textContentType(.password)
+                    .roundedBorder()
+            }
 
-                VStack {
-                    Button("LOGIN", action: loginButtonAction)
-                        .buttonStyle(.borderedProminent)
-                        .disabled(isLoading)
+            VStack {
+                Button("LOGIN", action: loginButtonAction)
+                    .buttonStyle(.borderedProminent)
+                    .disabled(isLoading)
 
-                    HStack(spacing: 0) {
-                        Text("Don't have an account? ")
-                        NavigationLink("Sign Up") {
-                            RegistrationView()
-                                .navigationBarBackButtonHidden()
-                        }
+                HStack(spacing: 0) {
+                    Text("Don't have an account? ")
+                    Button("Sign Up") {
+                        navigationHelper.push(AppRoute.registrationView)
                     }
                 }
             }
-            .padding()
-
-            .alert("Error", isPresented: $showAlert) {
-                Button("Retry", action: reset)
-            } message: {
-                Text(error?.errorDescription ?? "Something went wrong!!")
-            }
-            .navigationDestination(isPresented: $navigateToHome) {
-                MyProductsView()
-                    .navigationBarBackButtonHidden()
-                    .navigationBarTitleDisplayMode(.large)
-            }
+        }
+        .padding()
+        .onAppear {
+            viewModel.reset()
+        }
+        .alert("Error", isPresented: $showAlert) {
+            Button("Retry", action: reset)
+        } message: {
+            Text(error?.errorDescription ?? "Something went wrong!!")
         }
     }
 
@@ -72,12 +65,12 @@ struct LoginView: View {
                     password: input.password
                 )
                 viewModel.user = user
-                navigateToHome = true
+                navigationHelper.push(AppRoute.myProductsView)
             } catch let appError as AppError {
                 error = appError
                 showAlert = true
             } catch {
-                self.error = AppError.serverError()
+                self.error = AppError.unknownError
                 showAlert = true
             }
             isLoading = false
@@ -97,5 +90,5 @@ struct LoginView: View {
 
 #Preview {
     LoginView()
-        .environmentObject(ViewModel())
+        .injectEnvironmentObjects()
 }

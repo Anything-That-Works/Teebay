@@ -9,12 +9,15 @@ import SwiftUI
 
 struct ProductView: View {
     let product: Product
+    let showDeleteOption: Bool
     @State private var isDescriptionExpanded = false
     @State private var isTruncated = false
     @State private var autoCollapseTask: Task<Void, Never>?
-
-    init(_ product: Product) {
+    @State private var showDeleteAlert = false
+    @EnvironmentObject private var viewModel: ViewModel
+    init(_ product: Product, showDeleteOption: Bool = true) {
         self.product = product
+        self.showDeleteOption = showDeleteOption
     }
 
     var body: some View {
@@ -22,24 +25,34 @@ struct ProductView: View {
             HStack {
                 RemoteImageView(url: URL(string: product.productImage))
                 VStack(alignment: .leading) {
-                    Text(product.title)
-                        .font(.title2.bold())
-                    if !product.categories.isEmpty {
-                        Text("Categories: ")
-                            + Text(
-                                product.categories.map { $0.rawValue }.joined(
-                                    separator: ", "
-                                )
-                            )
-                    }
                     HStack {
-                        Text("Price: $\(product.purchasePrice)")
-                        Text("Rent: $\(product.rentPrice)")
-                        Text(product.rentOption.label)
+                        Text(product.title)
+                            .font(.title2.bold())
+                        Spacer()
+                        if showDeleteOption {
+                            Button {
+                                showDeleteAlert = true
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.title3.bold())
+                                    .foregroundStyle(Color.red)
+                            }
+                        }
+
+                    }
+                    if !product.categories.isEmpty {
+                        HStack(spacing: 0) {
+                            Text("Categories: ")
+                            Text(product.categories.map { $0.rawValue }.joined(separator: ", "))
+                        }.font(.footnote)
                     }
                 }
             }
-
+            HStack {
+                Text("Price: $\(product.purchasePrice)")
+                Text("Rent: $\(product.rentPrice)")
+                Text(product.rentOption.label)
+            }
             // Expandable description section
             VStack(alignment: .leading, spacing: 8) {
                 Text(product.description)
@@ -110,10 +123,21 @@ struct ProductView: View {
         .onDisappear {
             autoCollapseTask?.cancel()
         }
+        .alert("Confirm Delete", isPresented: $showDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                viewModel.delete(product: product)
+            }
+            Button("Cancel", role: .cancel) {
+                showDeleteAlert = false
+            }
+        } message: {
+            Text("Are you sure you want to delete this item?")
+        }
     }
 }
 
 #Preview(traits: .sizeThatFitsLayout) {
     ProductView(Product.sampleProduct)
+        .injectEnvironmentObjects()
         .padding()
 }

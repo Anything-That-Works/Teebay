@@ -9,16 +9,15 @@ import SwiftUI
 
 struct AddProductView: View {
     @State var newProduct = Product.empty()
-
-    @State private var currentStep = 5
+    @State private var currentStep = 0
     @State private var errors = [ValidationError]()
     @State private var showErrors = false
     @State private var showSuccessAlert = false
 
     private let totalSteps = 5
 
-    @EnvironmentObject var viewModel: ViewModel
-    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject private var viewModel: ViewModel
+    @EnvironmentObject private var navigationHelper: NavigationHelper
     var body: some View {
         VStack {
             ProgressView(value: Double(currentStep), total: Double(totalSteps))
@@ -26,7 +25,6 @@ struct AddProductView: View {
                 .padding()
 
             Spacer()
-
             ZStack {
                 ForEach(0...totalSteps, id: \.self) { index in
                     AddProductStepView(
@@ -75,10 +73,19 @@ struct AddProductView: View {
         }
         .alert("Success", isPresented: $showSuccessAlert) {
             Button("Done") {
-                dismiss()
+                navigationHelper.pop()
             }
         } message: {
             Text("Product has been successfully added!")
+        }
+        .overlay {
+            if viewModel.isProcessingRequest {
+                ProgressView("Uploading...")
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .cornerRadius(8)
+                    .shadow(radius: 4)
+            }
         }
     }
 
@@ -94,7 +101,10 @@ struct AddProductView: View {
         } else {
             let validationResult = validateProduct()
             if validationResult.isValid {
-                submitProduct()
+                viewModel.addNewProduct(newProduct)
+                if (viewModel.processError == nil) {
+                    showSuccessAlert = true
+                }
             } else {
                 errors = validationResult.errors
                 showErrors = true
@@ -102,23 +112,11 @@ struct AddProductView: View {
         }
     }
 
-    private func submitProduct() {
-        print("Submitting product...")
-        Task {
-            do {
-                let product = try await APIServices.addNewProduct(newProduct)
-                print(product)
-                showSuccessAlert = true
-            } catch {
-                print(error)
-            }
-        }
-    }
 }
 
 #Preview {
     let viewModel = ViewModel()
     viewModel.user = User.sampleUser
     return AddProductView()
-        .environmentObject(viewModel)
+        .injectEnvironmentObjects(viewModel: viewModel)
 }

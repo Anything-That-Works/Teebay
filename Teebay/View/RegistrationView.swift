@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RegistrationView: View {
     @StateObject var viewModel = RegistrationViewModel()
-    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject private var navigationHelper: NavigationHelper
 
     var body: some View {
         VStack(spacing: 50) {
@@ -65,7 +65,7 @@ struct RegistrationView: View {
                     Text("Already have an account? ")
 
                     Button("Sign In") {
-                        dismiss()
+                        navigationHelper.pop()
                     }
                 }
             }
@@ -73,7 +73,7 @@ struct RegistrationView: View {
         .padding(.horizontal)
         .alert("Success!", isPresented: $viewModel.isRegistrationSuccessful) {
             Button("Done") {
-                dismiss()
+                navigationHelper.pop()
             }
         } message: {
             Text("Registration completed successfully.")
@@ -92,5 +92,6 @@ struct RegistrationView: View {
 #Preview {
     NavigationStack {
         RegistrationView()
+            .injectEnvironmentObjects()
     }
 }
