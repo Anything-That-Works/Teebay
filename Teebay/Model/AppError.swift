@@ -14,6 +14,8 @@ enum AppError: Error, LocalizedError {
     case encodingFailed
     case unknownError
     case serverError(code: HTTPURLResponse)
+    case biometricNotAvailable
+    case biometricAuthenticationFailed
 
     var errorDescription: String? {
         switch self {
@@ -27,6 +29,10 @@ enum AppError: Error, LocalizedError {
             return "Unable to decode user data."
         case .encodingFailed:
             return "Unable to encode user data."
+        case .biometricNotAvailable:
+            return "Biometric authentication is not available on this device."
+        case .biometricAuthenticationFailed:
+            return "Biometric authentication failed. Please try again."
         case .serverError(let code):
             switch code.statusCode {
             case 400:
