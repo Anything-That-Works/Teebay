@@ -15,4 +15,5 @@ struct Constants {
     static let addProductEndpoint = "/products/"
     static let getProductsEndpoint = "/products/"
     static let deleteProductEndpoint = "/products/"
+    static let updateProductEndpoint = "/products/{id}/"
 }

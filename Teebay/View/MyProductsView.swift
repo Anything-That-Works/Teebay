@@ -16,7 +16,12 @@ struct MyProductsView: View {
         ZStack(alignment: .bottomTrailing) {
             List {
                 ForEach(viewModel.products, id: \.id) { item in
-                    ProductView(item)
+                    NavigationLink {
+                        EditProductView(product: item)
+                    } label: {
+                        ProductView(item)
+                    }
+
                 }
                 .onDelete { indexSet in
                     indexSetToDelete = indexSet

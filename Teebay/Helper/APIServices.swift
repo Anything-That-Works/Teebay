@@ -143,6 +143,29 @@ class APIServices {
         print(response.httpResponse)
     }
 
+    static func updateProduct(product: Product) async throws -> Product {
+        guard let url = URL(string: Constants.baseURL + Constants.updateProductEndpoint + "\(product.id)/") else {
+            print("Invalid URL: \(Constants.baseURL + Constants.updateProductEndpoint)\(product.id)/")
+            throw AppError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        request.httpBody = createMultipartBody(boundary: boundary, product: product)
+
+        let response = try await Self.makeAPIRequest(using: request)
+
+        guard let updatedProduct = Product.decode(from: response.data) else {
+            throw AppError.decodingFailed
+        }
+
+        return updatedProduct
+    }
+
     private static func createMultipartBody(boundary: String, product: Product)
     -> Data
     {

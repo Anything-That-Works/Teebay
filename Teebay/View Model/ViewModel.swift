@@ -39,6 +39,31 @@ class ViewModel: ObservableObject {
         }
     }
 
+    func updateProduct(using data: Product) {
+        print(#function)
+        Task {
+            do {
+                let products = try await APIServices.updateProduct(product: data)
+                dump(products)
+                await MainActor.run {
+                    withAnimation {
+                        self.getProducts()
+                    }
+                }
+            } catch let appError as AppError {
+                await MainActor.run {
+                    processError = appError
+                    showErrorAlert = true
+                }
+            } catch {
+                await MainActor.run {
+                    processError = AppError.serverError()
+                    showErrorAlert = true
+                }
+            }
+        }
+    }
+
     func deleteProduct(at offsets: IndexSet) {
         print(#function)
         Task {
@@ -73,4 +98,6 @@ class ViewModel: ObservableObject {
             }
         }
     }
+
+
 }
