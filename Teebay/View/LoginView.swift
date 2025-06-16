@@ -13,7 +13,7 @@ struct LoginView: View {
     @State private var error: AppError?
     @State private var showAlert = false
     @State private var isLoading = false
-    @State private var biometricType: BiometricAuthService.BiometricType = .none
+    @State private var biometricType: BiometricAuthService.BiometricType = .faceID
     @State private var showBiometricPrompt = false
     @State private var showBiometricAlert = false
 
@@ -37,22 +37,26 @@ struct LoginView: View {
             }
 
             VStack(spacing: 15) {
-                Button("LOGIN", action: loginButtonAction)
-                    .buttonStyle(.borderedProminent)
-                    .disabled(isLoading)
-                
-                if biometricType != .none && BiometricAuthService.shared.isBiometricEnabled {
-                    Button {
-                        authenticateWithBiometrics()
-                    } label: {
-                        HStack {
-                            Image(systemName: biometricType == .faceID ? "faceid" : "touchid")
-                            Text(biometricType == .faceID ? "Sign in with Face ID" : "Sign in with Touch ID")
-                        }
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(isLoading)
+                Button(action: loginButtonAction) {
+                    Text("LOGIN")
+                        .frame(width: 250)
                 }
+                .buttonStyle(.bordered)
+                .disabled(isLoading)
+                Button {
+                    authenticateWithBiometrics()
+                } label: {
+                    HStack {
+                        Image(systemName: biometricType == .faceID ? "faceid" : "touchid")
+                        Text(biometricType == .faceID ? "Sign in with Face ID" : "Sign in with Touch ID")
+                    }
+                    .frame(width: 250)
+                }
+                .buttonStyle(.bordered)
+                .disabled(isLoading)
+//                if biometricType != .none && BiometricAuthService.shared.isBiometricEnabled {
+//
+//                }
 
                 HStack(spacing: 0) {
                     Text("Don't have an account? ")
